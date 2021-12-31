@@ -1,18 +1,17 @@
 import React, { useState, useCallback, useRef, Fragment, useEffect } from 'react';
-import { Upload, Button, Tooltip, Space, Modal } from 'antd';
+import { Upload, Button, Tooltip, Popover, Modal } from 'antd';
 
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import update from 'immutability-helper';
-import { UploadOutlined } from '@ant-design/icons';
 import { ModalContent } from "qimai-rc-business";
+
 import styles from "./styles.less";
 
 
 const type = 'DragableUploadList';
-
 const DragableUploadListItem = ({ originNode, moveRow, file, fileList }) => {
-  const ref = React.useRef({} as any);
+  const ref = React.useRef();
   const index = fileList.indexOf(file);
   const [{ isOver, dropClassName }, drop] = useDrop({
     accept: type,
@@ -51,44 +50,82 @@ const DragableUploadListItem = ({ originNode, moveRow, file, fileList }) => {
 };
 
 export const DragSortingUpload = () => {
-  const [modalSelected, setModalSelected] = useState([])
+  
+  const [visible, setVisible] = useState(false)
+  const [tempSelected, setTempSelected] = useState([])
+  const [modalpSelected, setModalSelected] = useState([])
+  const [clicked, setClicked] = useState(false)
   const [fileList, setFileList] = useState([
-    {
-      uid: '-1',
-      name: 'image1.png',
-      status: 'done',
-      url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-    },
-    {
-      uid: '-2',
-      name: 'image2.png',
-      status: 'done',
-      url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-    },
-    {
-      uid: 'r43',
-      name: 'image3.png',
-      status: 'done',
-      url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-    },
-    {
-      uid: '254t',
-      name: 'image4.png',
-      status: 'done',
-      url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-    },
-    {
-      uid: '76',
-      name: 'image.png',
-      status: 'error',
-    },
   ]);
+  const uploadRef = useRef({} as any)
 
-	const [visible, setVisible] = useState<boolean>(false);
   useEffect(() => {
-    console.log('modalSelected', modalSelected)
-  }, [modalSelected])
+    uploadRef.current.getElementsByTagName('input')[0].setAttribute("disabled","true")
+  }, [])
 
+  useEffect(() => {
+    const temp = modalpSelected.map(item => {
+      const reg = item.split('/')
+      const len = reg.length
+      return len && {
+        uid: -Math.floor(Math.random() * 10000000),
+        name: reg[len - 1],
+        status: 'done',
+        url: item
+      }
+    }) as []
+    console.log('temp', temp)
+
+    setFileList(val => [...val, ...temp])
+  }, [modalpSelected])
+
+  const onClick = (e:any) => {
+    if(!e?.target) {
+      setClicked(e)
+      return
+    }
+    const type: string = e.target?.parentNode?.getAttribute('datatype')
+    switch (type) {
+      case 'img':
+      case 'mp4':
+      case 'file':
+        setVisible(true)
+        break
+      case 'url':
+        break
+      case 'goods':
+        break
+      default:
+        break;
+    }
+
+    setClicked(false)
+    
+  }
+  const content = (
+    <div className={styles.popover} onClick={onClick}>
+      <div datatype='img'>
+        <div className={styles.cardBg}></div>
+        <div className={styles.cardFont}>图片</div>
+      </div>
+      <div datatype='mp4'>
+        <div className={styles.cardBg}></div>
+        <div className={styles.cardFont}>视频</div>
+      </div>
+      <div datatype='file'>
+        <div className={styles.cardBg}></div>
+        <div className={styles.cardFont}>文件</div>
+      </div>
+      <div datatype='url'>
+        <div className={styles.cardBg}></div>
+        <div className={styles.cardFont}>链接</div>
+      </div>
+      <div datatype='goods'>
+        <div className={styles.cardBg}></div>
+        <div className={styles.cardFont}>商品</div>
+      </div>
+    </div>
+  );
 
   const moveRow = useCallback(
     (dragIndex, hoverIndex) => {
@@ -105,51 +142,50 @@ export const DragSortingUpload = () => {
     [fileList],
   );
 
-  const onChange = ({ fileList: newFileList }) => {
-    // setFileList(newFileList);
-    console.log(123123)
-    setVisible(true);
-  };
-
   return (
     <Fragment>
-      <DndProvider backend={HTML5Backend}>
-        <Upload
-          disabled
-          action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-          fileList={fileList as []}
-          // onChange={onChange}
-          itemRender={(originNode, file, currFileList) => (
-            <DragableUploadListItem
-              originNode={originNode}
-              file={file}
-              fileList={currFileList}
-              moveRow={moveRow}
-            />
-          )}
-        >
-          <Button icon={<UploadOutlined />} onClick={onChange}>Click to Upload</Button>
-        </Upload>
-      </DndProvider>
+      <div className={styles.uploadContainer} ref={uploadRef}>
+        <DndProvider backend={HTML5Backend}>
+          <Upload
+            action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+            fileList={fileList}
+            itemRender={(originNode, file, currFileList) => (
+              <DragableUploadListItem
+                originNode={originNode}
+                file={file}
+                fileList={currFileList}
+                moveRow={moveRow}
+              />
+            )}
+          >
+            <Popover placement="topLeft" content={content} trigger="click" visible={clicked} onVisibleChange={onClick}>
+              <div className={styles.openUpload} onClick={e => {
+                e.stopPropagation()
+                setClicked(true)
+                // setVisible(true)
+              }}>
+                <img src={require('./public/plus.svg')} alt="" />
+                <span>添加图片/视频/文件/链接/商品/营销活动</span>
+              </div>
+            </Popover>
+          </Upload>
+        </DndProvider>
+      </div>
       <Modal
         title='我的图库'
         width={935}
-        // className={styles.selectModal}s
+        className={styles.selectModal}
         visible={visible}
         centered
-        destroyOnClose
         onOk={() => {
-          // onSelectChange([..._value, ...modalSelected]);
           setVisible(false);
+          setModalSelected(tempSelected);
         }}
         onCancel={() => {
           setVisible(false);
-        }}
-        afterClose={() => {
-          // setModalSelected([]);
         }}>
         <ModalContent
-          setModalSelected={setModalSelected as (v: string[]) => void}
+          setModalSelected={setTempSelected as (v: string[]) => void}
           env={'yapi'}
           // multiple={false}
         />

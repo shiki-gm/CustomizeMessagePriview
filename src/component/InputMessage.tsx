@@ -46,8 +46,6 @@ export default function InputMessage(props) {
       } else if (item.type === "tag") {
         if (item.name === "img") {
           val = val + item.attrs.alt;
-        // } else if (item.name === "br") {
-        //   val = val + "br";
         } else if (item.name === "div") {
            val = val + "br" + getContent({}, item.children);
         } else {
