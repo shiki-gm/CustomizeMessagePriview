@@ -5,6 +5,10 @@ import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import update from 'immutability-helper';
 import { ModalContent } from "qimai-rc-business";
+import Activity from "./comp/Activity";
+import Goods from "./comp/Goods";
+import UrlLink from "./comp/UrlLink";
+
 
 import styles from "./styles.less";
 
@@ -51,7 +55,12 @@ const DragableUploadListItem = ({ originNode, moveRow, file, fileList }) => {
 
 export const DragSortingUpload = () => {
   
-  const [visible, setVisible] = useState(false)
+  const [isModalVisible, setIsModalVisible] = useState({
+    activityVisible: false,
+    goodsVisible: false,
+    urlLinkVisible: false,
+    imgVisible: false,
+  });
   const [tempSelected, setTempSelected] = useState([])
   const [modalpSelected, setModalSelected] = useState([])
   const [clicked, setClicked] = useState(false)
@@ -63,21 +72,19 @@ export const DragSortingUpload = () => {
     uploadRef.current.getElementsByTagName('input')[0].setAttribute("disabled","true")
   }, [])
 
-  useEffect(() => {
-    const temp = modalpSelected.map(item => {
-      const reg = item.split('/')
-      const len = reg.length
-      return len && {
-        uid: -Math.floor(Math.random() * 10000000),
-        name: reg[len - 1],
-        status: 'done',
-        url: item
-      }
-    }) as []
-    console.log('temp', temp)
-
-    setFileList(val => [...val, ...temp])
-  }, [modalpSelected])
+  // useEffect(() => {
+  //   const temp = modalpSelected.map(item => {
+  //     const reg = item.split('/')
+  //     const len = reg.length
+  //     return len && {
+  //       uid: -Math.floor(Math.random() * 10000000),
+  //       name: reg[len - 1],
+  //       status: 'done',
+  //       url: item
+  //     }
+  //   }) as []
+  //   setFileList(val => [...val, ...temp])
+  // }, [modalpSelected])
 
   const onClick = (e:any) => {
     if(!e?.target) {
@@ -89,11 +96,16 @@ export const DragSortingUpload = () => {
       case 'img':
       case 'mp4':
       case 'file':
-        setVisible(true)
+        setIsModalVisible(val => ({...val, imgVisible: true}));
         break
       case 'url':
+        setIsModalVisible(val => ({...val, urlLinkVisible: true}));
         break
       case 'goods':
+        setIsModalVisible(val => ({...val, goodsVisible: true}));
+        break
+      case 'activity':
+        setIsModalVisible(val => ({...val, activityVisible: true}));
         break
       default:
         break;
@@ -102,6 +114,32 @@ export const DragSortingUpload = () => {
     setClicked(false)
     
   }
+  const onChange = useCallback((type: string, data: any = null) => {
+    console.log('data', data);
+    
+    if (data !== null) {
+      switch (type) {
+        case 'imgVisible':
+          console.log('data', data);
+          setFileList(data.data)
+          break
+        case 'urlLinkVisible':
+          console.log('data', data);
+          
+          break
+        case 'goodsVisible':
+          console.log('data', data);
+          break
+        case 'activityVisible':
+          console.log('data', data);
+          
+          break
+        default:
+          break;
+      }
+    }
+    setIsModalVisible(val => ({...val, [type]: false}));
+  }, [])
   const content = (
     <div className={styles.popover} onClick={onClick}>
       <div datatype='img'>
@@ -123,6 +161,10 @@ export const DragSortingUpload = () => {
       <div datatype='goods'>
         <div className={styles.cardBg}></div>
         <div className={styles.cardFont}>商品</div>
+      </div>
+      <div datatype='activity'>
+        <div className={styles.cardBg}></div>
+        <div className={styles.cardFont}>活动</div>
       </div>
     </div>
   );
@@ -162,7 +204,6 @@ export const DragSortingUpload = () => {
               <div className={styles.openUpload} onClick={e => {
                 e.stopPropagation()
                 setClicked(true)
-                // setVisible(true)
               }}>
                 <img src={require('./public/plus.svg')} alt="" />
                 <span>添加图片/视频/文件/链接/商品/营销活动</span>
@@ -175,14 +216,26 @@ export const DragSortingUpload = () => {
         title='我的图库'
         width={935}
         className={styles.selectModal}
-        visible={visible}
+        visible={isModalVisible.imgVisible}
         centered
         onOk={() => {
-          setVisible(false);
           setModalSelected(tempSelected);
+          const temp = tempSelected.map(item => {
+            const reg = item.split('/')
+            const len = reg.length
+            return len && {
+              uid: -Math.floor(Math.random() * 10000000),
+              name: reg[len - 1],
+              status: 'done',
+              url: item
+            }
+          }) as []
+          onChange('imgVisible', {data: temp})
+          // setFileList(val => [...val, ...temp])
         }}
         onCancel={() => {
-          setVisible(false);
+          onChange('imgVisible', null)
+
         }}>
         <ModalContent
           setModalSelected={setTempSelected as (v: string[]) => void}
@@ -190,6 +243,9 @@ export const DragSortingUpload = () => {
           // multiple={false}
         />
       </Modal>
+      <Activity visible={isModalVisible.activityVisible} onChange={(data: any) => onChange('activityVisible', data)}/>
+      <Goods visible={isModalVisible.goodsVisible} onChange={(data: any) => onChange('goodsVisible', data)}/>
+      <UrlLink visible={isModalVisible.urlLinkVisible} onChange={(data: any) => onChange('urlLinkVisible', data)}/>
     </Fragment>
   );
 };

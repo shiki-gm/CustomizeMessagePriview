@@ -189,7 +189,6 @@ export default function InputMessage(props) {
         />
         <span className="last-num">{textVal.length}/1500</span>
       </div>
-      <div className="line"></div>
       <div>{children}</div>
     </div>
   );

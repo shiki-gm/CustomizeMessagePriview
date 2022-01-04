@@ -20,19 +20,21 @@
     ]
   },
   "dependencies": {
-    "@ant-design/pro-layout": "^6.5.0",
-    "qimai-rc-business": "^0.1.68",
-    "react": "17.x",
-    "react-dom": "17.x",
-    "umi": "^3.5.20",
     "@ant-design/icons": "^4.7.0",
+    "@ant-design/pro-layout": "^6.5.0",
     "antd": "4.17.4",
     "classnames": "2.3.1",
     "html-parse-stringify": "^3.0.1",
     "immutability-helper": "^3.1.1",
+    "moment": "^2.29.1",
+    "qimai-rc-business": "^0.1.68",
+    "qimai_designpro": "^0.1.57",
+    "react": "17.x",
     "react-dnd": "^14.0.4",
     "react-dnd-html5-backend": "^14.0.2",
-    "react-scripts": "4.0.0"
+    "react-dom": "17.x",
+    "react-scripts": "4.0.0",
+    "umi": "^3.5.20"
   },
   "devDependencies": {
     "@types/react": "^17.0.0",
