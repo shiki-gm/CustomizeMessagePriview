@@ -3,10 +3,9 @@ import htmlParser from "html-parse-stringify";
 import "./styles.less";
 
 export default function InputMessage(props) {
-  const {children} = props
   const NICKNAME_KEYWORD = "#客户昵称#",
     NICKNAME_IMG_SRC = require('./public/nickname.svg');
-  const { setState, textVal } = props;
+  const { setState, textVal, children, feedbackValue } = props;
   const ref = useRef({} as any);
   const cache = useRef("");
   
@@ -19,6 +18,11 @@ export default function InputMessage(props) {
       const val = getContent(ref.current.innerHTML);
       if (val.length >= 1500 && e.keyCode !== 8) e.preventDefault();
     });
+    if (feedbackValue) {
+      console.log('123', feedbackValue);
+      ref.current.focus();
+      getKeyWord(feedbackValue)
+    }
   }, []);
 
   const getContent = (data = {}, children = []) => {
