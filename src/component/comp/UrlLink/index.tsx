@@ -6,7 +6,7 @@ interface Props {
   onChange: (data?: {}) => void;
 }
 
-export default memo((props: Props) => {
+export default (props: Props) => {
   const { visible = false, onChange } = props;
   const [value, setValue] = useState('');
   const [form] = Form.useForm();
@@ -60,4 +60,4 @@ export default memo((props: Props) => {
       </Form>
     </Modal>
   );
-});
+}

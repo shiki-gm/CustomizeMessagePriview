@@ -14,18 +14,23 @@ interface Props {
   onChange: (data?: {}) => void;
 }
 
-export default memo((props: Props) => {
+export default (props: Props) => {
   const { visible = false, onChange } = props;
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
+
 
   const handleOk = () => {
-    onChange({ data: selectedRowKeys });
+    onChange({ data: selectedRows });
   };
 
-  const onSelectChange = (selectedRowKeys: any) => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
+  const onSelectChange = (selectedRowKeys: any, selectedRows: any) => {
+    console.log('selectedRows changed: ', selectedRows);
     setSelectedRowKeys(selectedRowKeys);
+    setSelectedRows(selectedRows);
+
   };
+
 
   const handleCancel = () => {
     setSelectedRowKeys([])
@@ -79,4 +84,4 @@ export default memo((props: Props) => {
         </div>
     </BaseModal>
   );
-});
+}

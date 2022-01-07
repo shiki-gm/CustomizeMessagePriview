@@ -1,26 +1,34 @@
 
 import { Button } from 'antd';
 import { useState, useEffect } from 'react';
+import { ImgInterface, RichText } from "./InputMessage";
 import "./styles.less";
 
-export default function MessagePreview(props) {
-  const {textVal} = props
+interface IProps {
+  richText: RichText
+}
+export default function MessagePreview(props: IProps) {
+  const { richText } = props
   const [state, setState] = useState('')
   
   useEffect(() => {
     let temp: any = document.createElement("div");
-    temp.innerHTML = textVal;
+    temp.innerText = richText.text;
     let output = temp.innerText
     temp = null
     output = output.replace(/\&nbsp\;/gi, ' ')
     output = output.replace(/br/gi, '<br/>')
 
-    console.log('output', output);
+    // console.log('output', output);
     setState(output)
-  }, [textVal])
+  }, [richText])
+
   return (
-    <div className='messagePreview'>
+    <pre className='messagePreview'>
       <div dangerouslySetInnerHTML={{__html: state}} />
-    </div>
+      {richText.files.map((item: ImgInterface) => (<div key={item.uid} >
+        <img src={item.url as any} alt={item.name} />
+      </div>))}
+    </pre>
   );
 }

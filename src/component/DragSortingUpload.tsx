@@ -8,6 +8,7 @@ import { ModalContent } from "qimai-rc-business";
 import Activity from "./comp/Activity";
 import Goods from "./comp/Goods";
 import UrlLink from "./comp/UrlLink";
+import { ImgInterface, RichText } from "./InputMessage";
 
 
 import styles from "./styles.less";
@@ -53,38 +54,31 @@ const DragableUploadListItem = ({ originNode, moveRow, file, fileList }) => {
   );
 };
 
-export const DragSortingUpload = () => {
+interface IProps {
+  setRichText: any,
+  richText: RichText
+}
+export const DragSortingUpload = (props: IProps) => {
+  const { setRichText, richText } = props;
   
-  const [isModalVisible, setIsModalVisible] = useState({
+  const [isModalVisible, setIsModalVisible] = useState<any>({
     activityVisible: false,
     goodsVisible: false,
     urlLinkVisible: false,
     imgVisible: false,
   });
-  const [tempSelected, setTempSelected] = useState([])
-  const [modalpSelected, setModalSelected] = useState([])
-  const [clicked, setClicked] = useState(false)
-  const [fileList, setFileList] = useState([
-  ]);
-  const uploadRef = useRef({} as any)
+  const [tempSelected, setTempSelected] = useState<string[]>([])
+  const [clicked, setClicked] = useState<boolean>(false)
+  const [fileList, setFileList] = useState<ImgInterface[]>(richText.files);
+  const uploadRef = useRef<any>({})
 
   useEffect(() => {
     uploadRef.current.getElementsByTagName('input')[0].setAttribute("disabled","true")
   }, [])
 
-  // useEffect(() => {
-  //   const temp = modalpSelected.map(item => {
-  //     const reg = item.split('/')
-  //     const len = reg.length
-  //     return len && {
-  //       uid: -Math.floor(Math.random() * 10000000),
-  //       name: reg[len - 1],
-  //       status: 'done',
-  //       url: item
-  //     }
-  //   }) as []
-  //   setFileList(val => [...val, ...temp])
-  // }, [modalpSelected])
+  useEffect(() => {
+    setRichText({...richText, files: fileList})
+  }, [fileList])
 
   const onClick = (e:any) => {
     if(!e?.target) {
@@ -114,32 +108,62 @@ export const DragSortingUpload = () => {
     setClicked(false)
     
   }
-  const onChange = useCallback((type: string, data: any = null) => {
+  const onChange = (type: string, data: any = null) => {
     console.log('data', data);
     
     if (data !== null) {
       switch (type) {
         case 'imgVisible':
-          console.log('data', data);
-          setFileList(data.data)
+          console.log('data', data.data);
+          console.log('[...fileList, ...data.data]', [...fileList, ...data.data], fileList);
+          
+          setFileList([...fileList, ...data.data])
+          // setFileList(data.data)
           break
         case 'urlLinkVisible':
           console.log('data', data);
           
           break
         case 'goodsVisible':
+          // setFileList([...fileList, ...data.data])qcode
           console.log('data', data);
+          const qcodes = data?.data?.map((item: {qcode: string}) => item.qcode ? item.qcode : '') || []
+          console.log('urls', qcodes);
+          
+          setFileList([...fileList, ...handleData(qcodes)])
           break
         case 'activityVisible':
           console.log('data', data);
+          const urls = data?.data?.map((item: {url: string}) => item.url ? item.url : '') || []
+          console.log('urls', urls);
           
+          setFileList([...fileList, ...handleData(urls)])
           break
         default:
           break;
       }
     }
-    setIsModalVisible(val => ({...val, [type]: false}));
-  }, [])
+    setIsModalVisible((val: any) => ({...val, [type]: false}));
+  }
+
+
+  const onRemove = (file: {uid: string}) => {
+    const temp = fileList.filter(item => item.uid !== file.uid)
+    setFileList(temp)
+  }
+
+  const handleData: any = (data: string[]) => {
+    return data.map((item: string) => {
+      const reg = item.split('/')
+      const len = reg.length
+      return len && {
+        uid: -Math.floor(Math.random() * 10000000),
+        name: reg[len - 1],
+        status: 'done',
+        url: item
+      }
+    })
+  }
   const content = (
     <div className={styles.popover} onClick={onClick}>
       <div datatype='img'>
@@ -191,6 +215,7 @@ export const DragSortingUpload = () => {
           <Upload
             action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
             fileList={fileList}
+            onRemove={onRemove}
             itemRender={(originNode, file, currFileList) => (
               <DragableUploadListItem
                 originNode={originNode}
@@ -218,18 +243,10 @@ export const DragSortingUpload = () => {
         className={styles.selectModal}
         visible={isModalVisible.imgVisible}
         centered
+        destroyOnClose
         onOk={() => {
-          setModalSelected(tempSelected);
-          const temp = tempSelected.map(item => {
-            const reg = item.split('/')
-            const len = reg.length
-            return len && {
-              uid: -Math.floor(Math.random() * 10000000),
-              name: reg[len - 1],
-              status: 'done',
-              url: item
-            }
-          }) as []
+          // setModalSelected(tempSelected);
+          const temp = handleData(tempSelected)
           onChange('imgVisible', {data: temp})
           // setFileList(val => [...val, ...temp])
         }}
@@ -238,7 +255,7 @@ export const DragSortingUpload = () => {
 
         }}>
         <ModalContent
-          setModalSelected={setTempSelected as (v: string[]) => void}
+          setModalSelected={setTempSelected}
           env={'yapi'}
           // multiple={false}
         />
