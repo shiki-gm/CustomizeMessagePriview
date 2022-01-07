@@ -2,6 +2,7 @@
 import { Button } from 'antd';
 import { useState, useEffect } from 'react';
 import { ImgInterface, RichText } from "./InputMessage";
+import MessageIcon from "./MessageIcon";
 import "./styles.less";
 
 interface IProps {
@@ -25,9 +26,11 @@ export default function MessagePreview(props: IProps) {
 
   return (
     <pre className='messagePreview'>
-      <div dangerouslySetInnerHTML={{__html: state}} />
+      <MessageIcon><div dangerouslySetInnerHTML={{__html: state}} /></MessageIcon>
       {richText.files.map((item: ImgInterface) => (<div key={item.uid} >
-        <img src={item.url as any} alt={item.name} />
+        <MessageIcon noBg>
+          <img src={item.url as any} alt={item.name} />
+        </MessageIcon>
       </div>))}
     </pre>
   );
